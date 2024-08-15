@@ -18,7 +18,7 @@ export default function Captured() {
 
     return (
         <Box component="main" className="flex flex-col items-center p-8">
-            <Grid container spacing={2}>
+            <Grid container spacing={3}>
                 {currentPagePokemons.map(pokemon => (
                     <Grid item xs={12} sm={6} md={4} lg={3} key={pokemon.id}>
                         <PokemonCard
@@ -26,6 +26,7 @@ export default function Captured() {
                             image={pokemon.image}
                             buttonLabel="Release Pokemon"
                             onButtonClick={() => dispatch(releasePokemon(pokemon.id))}
+                            types={pokemon.types}
                         />
                     </Grid>
                 ))}

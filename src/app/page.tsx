@@ -1,78 +1,103 @@
 'use client'
 
-import { useSelector, useDispatch } from 'react-redux'
-import { useState, useEffect } from 'react'
-import { Box, Grid } from '@mui/material'
-import { capturePokemon, selectCapturedPokemons } from '@/lib/redux/features/pokemonSlice'
-import { useGetPokemonsQuery } from '@/lib/redux/services/pokemonApi'
+import { Alert, Box, CircularProgress, Grid } from '@mui/material'
 import { PokemonCard } from '@/ui/components/Cards'
 import PaginationButtons from '@/ui/components/Buttons/PaginationButtons'
-
-interface PokemonDetails {
-    id: number
-    name: string
-    sprites: { front_default: string }
-    types: { type: { name: string } }[]
-}
+import GenericButton from '@/ui/components/Buttons/GenericButton'
+import { usePokemonSearch } from '@/lib/hooks'
+import { SearchBar } from '@/ui/components/Searchbar'
 
 export default function Home() {
-    const [page, setPage] = useState(1)
-    const { data, error, isLoading } = useGetPokemonsQuery(page)
-    const [pokemonDetails, setPokemonDetails] = useState<PokemonDetails[]>([])
-    const dispatch = useDispatch()
-    const capturedPokemons = useSelector(selectCapturedPokemons)
+    const {
+        setPage,
+        searchQuery,
+        setSearchQuery,
+        searchResult,
+        searchError,
+        pokemonDetails,
+        capturedPokemons,
+        handleCatch,
+        handleSearch,
+        handleResetSearch,
+        isLoading,
+        error,
+        data
+    } = usePokemonSearch()
 
-    useEffect(() => {
-        const fetchPokemonDetails = async () => {
-            if (data?.results) {
-                const details = await Promise.all(
-                    data.results.map(pokemon => fetch(pokemon.url).then(res => res.json()))
-                )
-                setPokemonDetails(details)
-            }
-        }
-        fetchPokemonDetails()
-    }, [data])
-
-    const handleCatch = (pokemon: PokemonDetails) => {
-        dispatch(
-            capturePokemon({
-                id: pokemon.id,
-                name: pokemon.name,
-                image: pokemon.sprites.front_default,
-                types: pokemon.types.map(t => t.type.name)
-            })
+    if (isLoading)
+        return (
+            <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+                <CircularProgress />
+            </Box>
         )
-    }
 
-    if (isLoading) return <div>Loading...</div>
-    if (error) return <div>Error loading Pokémons</div>
+    if (error)
+        return (
+            <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+                <Alert severity="error">Error loading Pokémons</Alert>
+            </Box>
+        )
 
     return (
         <Box component="main" className="flex flex-col items-center p-8">
-            <Grid container spacing={2}>
-                {pokemonDetails.map(pokemon => (
-                    <Grid item xs={12} sm={6} md={4} lg={3} key={pokemon.id}>
-                        <PokemonCard
-                            name={pokemon.name}
-                            image={pokemon.sprites.front_default}
-                            buttonLabel={
-                                capturedPokemons.some(p => p.id === pokemon.id)
-                                    ? 'Caught!'
-                                    : 'Catch'
-                            }
-                            onButtonClick={() => handleCatch(pokemon)}
-                            disabled={capturedPokemons.some(p => p.id === pokemon.id)}
-                        />
+            <form onSubmit={handleSearch} className="mb-4 w-full">
+                <SearchBar
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    error={Boolean(searchError)}
+                    helperText={searchError ? 'No Pokémon found. Please try another name.' : ''}
+                />
+            </form>
+            {searchResult ? (
+                <Box className="w-full">
+                    <Grid container spacing={3} justifyContent="center">
+                        <Grid item xs={12} sm={6} md={4} lg={3}>
+                            <PokemonCard
+                                name={searchResult.name}
+                                image={searchResult.sprites.front_default}
+                                buttonLabel={
+                                    capturedPokemons.some(p => p.id === searchResult.id)
+                                        ? 'Caught!'
+                                        : 'Catch'
+                                }
+                                onButtonClick={() => handleCatch(searchResult)}
+                                disabled={capturedPokemons.some(p => p.id === searchResult.id)}
+                                types={searchResult.types.map(t => t.type.name)}
+                            />
+                        </Grid>
                     </Grid>
-                ))}
-            </Grid>
-            <PaginationButtons
-                onPrevious={() => setPage(prev => Math.max(prev - 1, 1))}
-                onNext={() => setPage(prev => prev + 1)}
-                disablePrevious={!data?.previous}
-                disableNext={!data?.next}
-            />
+                    <GenericButton onClick={handleResetSearch} sx={{ mt: 4 }}>
+                        Reset Pokemon Search
+                    </GenericButton>
+                </Box>
+            ) : (
+                <>
+                    <Grid container spacing={3}>
+                        {pokemonDetails.map(pokemon => (
+                            <Grid item xs={12} sm={6} md={4} lg={3} key={pokemon.id}>
+                                <PokemonCard
+                                    name={pokemon.name}
+                                    image={pokemon.sprites.front_default}
+                                    buttonLabel={
+                                        capturedPokemons.some(p => p.id === pokemon.id)
+                                            ? 'Caught!'
+                                            : 'Catch'
+                                    }
+                                    onButtonClick={() => handleCatch(pokemon)}
+                                    disabled={capturedPokemons.some(p => p.id === pokemon.id)}
+                                    types={pokemon.types.map(t => t.type.name)}
+                                />
+                            </Grid>
+                        ))}
+                    </Grid>
+                    <PaginationButtons
+                        onPrevious={() => setPage(prev => Math.max(prev - 1, 1))}
+                        onNext={() => setPage(prev => prev + 1)}
+                        disablePrevious={!data?.previous}
+                        disableNext={!data?.next}
+                    />
+                </>
+            )}
         </Box>
     )
 }
