@@ -1,18 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '../store'
+import { PokemonSliceStateType, PokemonSliceType } from '@/lib/types'
 
-interface Pokemon {
-    id: number
-    name: string
-    image: string
-    types: string[]
-}
-
-interface PokemonState {
-    capturedPokemons: Pokemon[]
-}
-
-const initialState: PokemonState = {
+const initialState: PokemonSliceStateType = {
     capturedPokemons: []
 }
 
@@ -20,7 +10,7 @@ const pokemonSlice = createSlice({
     name: 'pokemon',
     initialState,
     reducers: {
-        capturePokemon: (state, action: PayloadAction<Pokemon>) => {
+        capturePokemon: (state, action: PayloadAction<PokemonSliceType>) => {
             state.capturedPokemons.push(action.payload)
             localStorage.setItem('capturedPokemons', JSON.stringify(state.capturedPokemons))
         },

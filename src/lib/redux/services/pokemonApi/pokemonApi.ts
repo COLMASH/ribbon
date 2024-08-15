@@ -1,24 +1,6 @@
+import { PokemonDetails, PokemonListResponse } from '@/lib/types'
 import { POKEMONS_PER_PAGE } from '@/lib/utils'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-
-interface Pokemon {
-    name: string
-    url: string
-}
-
-interface PokemonListResponse {
-    count: number
-    next: string | null
-    previous: string | null
-    results: Pokemon[]
-}
-
-interface PokemonDetails {
-    id: number
-    name: string
-    sprites: { front_default: string }
-    types: { type: { name: string } }[]
-}
 
 export const pokemonApi = createApi({
     reducerPath: 'pokemonApi',

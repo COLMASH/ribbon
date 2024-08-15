@@ -2,13 +2,7 @@ import { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { capturePokemon, selectCapturedPokemons } from '@/lib/redux/features/pokemonSlice'
 import { useGetPokemonsQuery, useSearchPokemonByNameQuery } from '@/lib/redux/services/pokemonApi'
-
-interface PokemonDetails {
-    id: number
-    name: string
-    sprites: { front_default: string }
-    types: { type: { name: string } }[]
-}
+import { PokemonDetails } from '../types'
 
 export function usePokemonSearch() {
     const [page, setPage] = useState(1)
