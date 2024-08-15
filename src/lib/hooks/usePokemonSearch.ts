@@ -31,10 +31,10 @@ export function usePokemonSearch() {
     }, [searchQuery])
 
     useEffect(() => {
-        if (searchData) {
+        if (searchData && searchData.name === searchQuery.toLowerCase()) {
             setSearchResult(searchData)
         }
-    }, [searchData])
+    }, [searchData, searchQuery])
 
     useEffect(() => {
         const fetchPokemonDetails = async () => {
@@ -59,15 +59,9 @@ export function usePokemonSearch() {
         )
     }
 
-    const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault()
-        if (searchQuery) {
-            setSearchResult(null)
-        }
-    }
-
     const handleResetSearch = () => {
         setSearchQuery('')
+        setDebouncedSearchQuery('')
         setSearchResult(null)
     }
 
@@ -78,10 +72,10 @@ export function usePokemonSearch() {
         setSearchQuery,
         searchResult,
         searchError,
+        searchData,
         pokemonDetails,
         capturedPokemons,
         handleCatch,
-        handleSearch,
         handleResetSearch,
         isLoading,
         error,
